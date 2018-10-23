@@ -1,0 +1,25 @@
+sudo: required
+services:
+  - docker
+
+# testing the application, using the client docker dev file with the client as context
+# You can add other tests here
+before_install:
+  - docker build -t nursh/redis-complex -f ./client/Dockerfile.dev ./client
+
+# run the built image and test it, npm test overwrites it, the coverage helps exit the watch mode
+script:
+  - docker run nursh/redis-complex npm test -- --coverage
+
+after_success:
+  - docker build -t nursh/multi-client ./client
+  - docker build -t nursh/multi-nginx ./nginx
+  - docker build -t nursh/multi-server ./server
+  - docker build -t nursh/multi-worker ./worker
+  # login to docker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  # push images to docker hub
+  - docker push nursh/multi-client
+  - docker push nursh/multi-nginx
+  - docker push nursh/multi-server
+  - docker push nursh/multi-worker
