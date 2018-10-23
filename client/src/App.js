@@ -1,13 +1,13 @@
 import React, { Component } from "react";
-import logo from "./logo.svg";
-import "./App.css";
 import { BrowserRouter as Router, Route, Link } from "react-router-dom";
 import OtherPage from "./OtherPage";
 import Fib from "./Fib";
 
 const Header = () => (
-  <header>
-    <Link to="/">Home</Link>
+  <header style={{ marginBottom: 30 }}>
+    <Link to="/" style={{ marginRight: 20 }}>
+      Home
+    </Link>
     <Link to="/otherpage">Other Page</Link>
   </header>
 );
@@ -15,15 +15,13 @@ const Header = () => (
 class App extends Component {
   render() {
     return (
-      <div className="App">
-        <Router>
-          <div>
-            <Header />
-            <Route exact to="/" component={Fib} />
-            <Route to="/otherpage" component={OtherPage} />
-          </div>
-        </Router>
-      </div>
+      <Router>
+        <div>
+          <Header />
+          <Route exact path="/" component={Fib} />
+          <Route path="/otherpage" component={OtherPage} />
+        </div>
+      </Router>
     );
   }
 }

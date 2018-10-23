@@ -1,7 +1,7 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
-require("dotenv").config();
+const keys = require("./keys");
 
 const app = express();
 app.use(cors());
@@ -9,22 +9,22 @@ app.use(bodyParser.json());
 
 const { Pool } = require("pg");
 const pgClient = new Pool({
-  user: process.env.pgUser,
-  host: process.env.pgHost,
-  database: process.env.pgDatabase,
-  password: process.env.pgPassword,
-  port: process.env.pgPort
+  user: keys.pgUser,
+  host: keys.pgHost,
+  database: keys.pgDatabase,
+  password: keys.pgPassword,
+  port: keys.pgPort
 });
 pgClient.on("error", () => console.log("Lost PG Connection"));
 
 pgClient
   .query("CREATE TABLE IF NOT EXISTS values (number INT)")
-  .catch(err => console.log(error));
+  .catch(err => console.error(err));
 
 const redis = require("redis");
 const redisClient = redis.createClient({
-  host: process.env.redisHost,
-  port: process.env.redisPort,
+  host: keys.redisHost,
+  port: keys.redisPort,
   retry_strategy: () => 1000
 });
 const redisPublisher = redisClient.duplicate();
@@ -33,7 +33,7 @@ app.get("/", (req, res) => {
   res.send("Hi");
 });
 
-app.get("/views/all", async (req, res) => {
+app.get("/values/all", async (req, res) => {
   const values = await pgClient.query("SELECT * from values");
 
   res.send(values.rows);
@@ -50,6 +50,7 @@ app.post("/values", async (req, res) => {
   if (parseInt(index) > 40) {
     return res.status(422).send("Index too high");
   }
+
 
   redisClient.hset("values", index, "Nothing yet");
   redisPublisher.publish("insert", index);
